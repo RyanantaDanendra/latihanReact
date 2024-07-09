@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useEffect } from 'react';
 
 const LearningHook = () => {
@@ -37,6 +37,55 @@ const LearningHook = () => {
         return (num < 10 ? "0" : "") + num;
     }
 
+    // USE REF
+    const [isRunning, setIsRunning] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const intervalIdRef = useRef(null);
+    const startTimeRef = useRef(0);
+
+    useEffect(() => {
+        if(isRunning) {
+            intervalIdRef.current = setInterval(() => {
+                setElapsedTime(Date.now() - startTimeRef.current);
+
+                return () => {
+                    clearInterval(intervalIdRef.current);
+                }
+
+            }, 10)
+        }
+        return () => {
+            clearInterval(intervalIdRef.current);
+        }
+    }, [isRunning]);
+
+    const start = () => {
+        setIsRunning(true);
+        startTimeRef.current = Date.now() - elapsedTime;
+    }
+
+    const stop2 = () => {
+        setIsRunning(false);
+    }
+
+    const reset2 = () => {
+        setElapsedTime(0);
+        setIsRunning(false);
+    }
+
+    const formatTime2 = () => {
+        let hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+        let minutes = Math.floor(elapsedTime / (1000 * 60) % 60);
+        let seconds = Math.floor(elapsedTime / (1000) % 60);
+        let miliseconds = Math.floor(elapsedTime % 1000 / 10);
+
+        minutes = String(minutes).padStart(2, "0")
+        seconds = String(seconds).padStart(2, "0")
+        miliseconds = String(miliseconds).padStart(2, "0")
+
+        return `${minutes} : ${seconds} : ${miliseconds}`;
+    }
+
     return (
         <>
             <div className="container mt-12 pb-12">
@@ -57,6 +106,21 @@ const LearningHook = () => {
                     <h1 className='text-3xl text-center'>Digital Clock</h1>
 
                     <p className='text-center text-6xl mt-6'>{timeFormat()}</p>
+                </div>
+
+                {/* USE REF */}
+                <div className="content w-full h-full mt-12">
+                    <h1 className='text-3xl text-center'>Stopwatch</h1>
+
+                    <div className="content flex flex-col items-center">
+                        <p className='text-6xl text-center'>{formatTime2()}</p>
+
+                        <div className="buttons mt-5 flex gap-8">
+                            <button onClick={start} className='start-btn px-5 py-2 bg-green-400'>START</button>
+                            <button onClick={stop2} className='stop-btn px-5 py-2 bg-red-400'>STOP</button>
+                            <button onClick={reset2} className='reset-btn px-5 py-2'>RESET</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
